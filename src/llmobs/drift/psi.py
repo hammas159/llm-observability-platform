@@ -54,7 +54,7 @@ def psi(expected: Sequence[float], actual: Sequence[float]) -> float:
     if len(expected) != len(actual):
         raise ValueError("distributions must have the same number of buckets")
     total = 0.0
-    for e, a in zip(expected, actual):
+    for e, a in zip(expected, actual, strict=False):
         e = max(e, _EPSILON)
         a = max(a, _EPSILON)
         total += (a - e) * math.log(a / e)
@@ -74,8 +74,7 @@ def psi_numeric(
         return 0.0
     ordered = sorted(reference)
     edges = [
-        ordered[min(len(ordered) - 1, int(len(ordered) * i / buckets))]
-        for i in range(1, buckets)
+        ordered[min(len(ordered) - 1, int(len(ordered) * i / buckets))] for i in range(1, buckets)
     ]
     # Ties collapse buckets; a constant reference has no distribution to shift.
     edges = sorted(set(edges))

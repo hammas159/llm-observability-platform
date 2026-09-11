@@ -18,7 +18,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 
-class Severity(str, enum.Enum):
+class Severity(enum.StrEnum):
     INFO = "info"
     WARNING = "warning"
     CRITICAL = "critical"
@@ -58,16 +58,29 @@ def _rate_rule(name, field_name, threshold, severity, label, *, multiplier=None)
 
 
 DEFAULT_RULES: list[Rule] = [
-    _rate_rule("error_rate", "error_rate", 0.05, Severity.CRITICAL,
-               "error rate", multiplier=2.0),
-    _rate_rule("refusal_rate", "refusal_rate", 0.30, Severity.WARNING,
-               "refusal rate", multiplier=2.0),
-    _rate_rule("fallback_rate", "fallback_rate", 0.20, Severity.WARNING,
-               "fallback rate", multiplier=3.0),
-    _rate_rule("tool_error_rate", "tool_error_rate", 0.10, Severity.WARNING,
-               "tool error rate", multiplier=2.0),
-    _rate_rule("ungrounded_rate", "ungrounded_rate", 0.20, Severity.CRITICAL,
-               "ungrounded answer rate", multiplier=2.0),
+    _rate_rule("error_rate", "error_rate", 0.05, Severity.CRITICAL, "error rate", multiplier=2.0),
+    _rate_rule(
+        "refusal_rate", "refusal_rate", 0.30, Severity.WARNING, "refusal rate", multiplier=2.0
+    ),
+    _rate_rule(
+        "fallback_rate", "fallback_rate", 0.20, Severity.WARNING, "fallback rate", multiplier=3.0
+    ),
+    _rate_rule(
+        "tool_error_rate",
+        "tool_error_rate",
+        0.10,
+        Severity.WARNING,
+        "tool error rate",
+        multiplier=2.0,
+    ),
+    _rate_rule(
+        "ungrounded_rate",
+        "ungrounded_rate",
+        0.20,
+        Severity.CRITICAL,
+        "ungrounded answer rate",
+        multiplier=2.0,
+    ),
 ]
 
 
@@ -96,14 +109,19 @@ def _cost_rule(max_usd_per_call: float = 0.05) -> Rule:
 
 @dataclass
 class AlertEngine:
-    rules: list[Rule] = field(default_factory=lambda: [
-        *DEFAULT_RULES, _latency_rule(), _cost_rule(),
-    ])
+    rules: list[Rule] = field(
+        default_factory=lambda: [
+            *DEFAULT_RULES,
+            _latency_rule(),
+            _cost_rule(),
+        ]
+    )
     _last_fired: dict[str, float] = field(default_factory=dict)
     history: list[Alert] = field(default_factory=list)
 
-    def evaluate(self, summary: dict, *, baseline: dict | None = None,
-                 scope: str = "") -> list[Alert]:
+    def evaluate(
+        self, summary: dict, *, baseline: dict | None = None, scope: str = ""
+    ) -> list[Alert]:
         now = time.time()
         fired: list[Alert] = []
 
@@ -118,8 +136,14 @@ class AlertEngine:
             if not triggered:
                 continue
 
-            alert = Alert(rule=rule.name, severity=rule.severity, message=message,
-                          value=value, threshold=threshold, scope=scope)
+            alert = Alert(
+                rule=rule.name,
+                severity=rule.severity,
+                message=message,
+                value=value,
+                threshold=threshold,
+                scope=scope,
+            )
             self._last_fired[key] = now
             self.history.append(alert)
             fired.append(alert)

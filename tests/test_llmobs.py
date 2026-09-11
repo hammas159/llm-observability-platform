@@ -195,12 +195,20 @@ class TestObservatory:
         obs = Observatory()
         now = time.time()
         # Reference window: short factual questions.
-        obs.ingest([call(at=now - 5400, prompt_length=8,
-                         prompt_signature="factual:xs:aaa") for _ in range(100)])
+        obs.ingest(
+            [
+                call(at=now - 5400, prompt_length=8, prompt_signature="factual:xs:aaa")
+                for _ in range(100)
+            ]
+        )
         # Current window: long procedural ones. Nothing errored; quality would just
         # quietly fall, which is the failure nobody instruments.
-        obs.ingest([call(at=now - 60, prompt_length=250,
-                         prompt_signature="procedural:l:bbb") for _ in range(100)])
+        obs.ingest(
+            [
+                call(at=now - 60, prompt_length=250, prompt_signature="procedural:l:bbb")
+                for _ in range(100)
+            ]
+        )
         result = obs.drift(window_seconds=3600)
         assert result["status"] == "ok"
         assert result["psi"]["prompt_signature"] > 0.25
@@ -210,8 +218,14 @@ class TestObservatory:
         obs = Observatory()
         now = time.time()
         for offset in (5400, 60):
-            obs.ingest([call(at=now - offset, prompt_length=10 + i % 5,
-                             prompt_signature="factual:xs:aaa") for i in range(100)])
+            obs.ingest(
+                [
+                    call(
+                        at=now - offset, prompt_length=10 + i % 5, prompt_signature="factual:xs:aaa"
+                    )
+                    for i in range(100)
+                ]
+            )
         assert obs.drift(window_seconds=3600)["verdict"]["prompt_signature"] == "stable"
 
     def test_sink_is_written_per_call(self, tmp_path):
@@ -245,10 +259,10 @@ class TestAlerts:
         """5% errors is the wrong alarm for a service that normally runs at 6%."""
         engine = AlertEngine()
         calls = [call(error="x") for _ in range(8)] + [call() for _ in range(92)]
-        baseline = summarise([call(error="x") for _ in range(10)]
-                             + [call() for _ in range(90)])
-        assert not any(a.rule == "error_rate"
-                       for a in engine.evaluate(summarise(calls), baseline=baseline))
+        baseline = summarise([call(error="x") for _ in range(10)] + [call() for _ in range(90)])
+        assert not any(
+            a.rule == "error_rate" for a in engine.evaluate(summarise(calls), baseline=baseline)
+        )
 
     def test_cooldown_prevents_repeat_firing(self):
         engine = AlertEngine()
@@ -267,8 +281,7 @@ class TestAlerts:
         engine = AlertEngine()
         calls = [call(grounding=0.1) for _ in range(50)] + [call(grounding=0.9) for _ in range(50)]
         fired = engine.evaluate(summarise(calls))
-        assert any(a.rule == "ungrounded_rate" and a.severity is Severity.CRITICAL
-                   for a in fired)
+        assert any(a.rule == "ungrounded_rate" and a.severity is Severity.CRITICAL for a in fired)
 
     def test_one_broken_feature_is_visible_despite_a_healthy_aggregate(self):
         """A feature failing every single call, completely invisible in the total.

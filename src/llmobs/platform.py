@@ -63,18 +63,23 @@ class Observatory:
         reference = self.window(window_seconds, ending=now - window_seconds)
 
         if len(reference) < 30 or len(current) < 30:
-            return {"status": "insufficient data",
-                    "reference": len(reference), "current": len(current)}
+            return {
+                "status": "insufficient data",
+                "reference": len(reference),
+                "current": len(current),
+            }
 
         scores = {
-            "prompt_length": psi_numeric([c.prompt_length for c in reference],
-                                         [c.prompt_length for c in current]),
-            "prompt_signature": psi_categorical([c.prompt_signature for c in reference],
-                                                [c.prompt_signature for c in current]),
-            "model": psi_categorical([c.model for c in reference],
-                                     [c.model for c in current]),
-            "latency": psi_numeric([c.latency_ms for c in reference],
-                                   [c.latency_ms for c in current]),
+            "prompt_length": psi_numeric(
+                [c.prompt_length for c in reference], [c.prompt_length for c in current]
+            ),
+            "prompt_signature": psi_categorical(
+                [c.prompt_signature for c in reference], [c.prompt_signature for c in current]
+            ),
+            "model": psi_categorical([c.model for c in reference], [c.model for c in current]),
+            "latency": psi_numeric(
+                [c.latency_ms for c in reference], [c.latency_ms for c in current]
+            ),
             "cost": psi_numeric([c.usd for c in reference], [c.usd for c in current]),
         }
         return {
@@ -86,8 +91,9 @@ class Observatory:
             "worst": max(scores, key=scores.get),
         }
 
-    def check_alerts(self, *, window_seconds: float = 3600.0,
-                     per_feature: bool = True) -> list[Alert]:
+    def check_alerts(
+        self, *, window_seconds: float = 3600.0, per_feature: bool = True
+    ) -> list[Alert]:
         """Evaluate rules globally and per feature.
 
         Per feature as well as globally, because one broken feature is invisible in
