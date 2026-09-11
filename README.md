@@ -153,3 +153,62 @@ make test
 ## License
 
 MIT
+
+---
+
+## Run it yourself
+
+```bash
+git clone https://github.com/hammas159/llm-observability-platform
+cd llm-observability-platform
+
+uv sync --all-groups     # or: pip install -e ".[dev]"
+make test                # 49 tests, no numpy, no network, no model
+```
+
+```python
+from pathlib import Path
+from llmobs import Observatory, LLMCall
+
+obs = Observatory(sink=Path("runs/calls.jsonl"))
+
+obs.record(
+    LLMCall(feature="search", tenant="acme", model="claude-sonnet-5",
+            prompt_tokens=820, completion_tokens=140, usd=0.0046,
+            latency_ms=980, grounding=0.82, fallback_used=True),
+    prompt=user_question,        # signature derived, the text is discarded
+)
+
+obs.summary(3600)        # percentiles, rates, cost per success
+obs.top_spend("feature") # what to switch off
+obs.drift()              # PSI across prompt shape, model mix, latency, cost
+obs.check_alerts()       # global and per feature
+```
+
+`LLMCall` maps onto what [`llm-gateway`](https://github.com/hammas159/llm-gateway)
+already emits and what [`rag-forge`](https://github.com/hammas159/rag-forge) already
+produces, so pointing one at the other needs no adapter.
+
+## Problems hit while building this
+
+**The first alerting rule fired on a healthy service and missed a broken one.** A single
+global error rate is dominated by whatever has the most traffic: one feature failing
+100% of the time sat invisible inside a 2.4% aggregate. *Fixed* by evaluating every rule
+per feature as well as globally — and that gap is now a test, sized so the aggregate
+genuinely hides the failure.
+
+**Cache hits made the model look fast.** Including 2 ms cache hits in the latency
+percentiles pulled p95 down and hid the tail that users on a miss actually experience.
+*Fixed* by excluding cached calls from latency statistics while still counting them for
+hit rate.
+
+**`None` grounding was being averaged as zero.** A call that reports no grounding score
+is not a call scoring zero — one is "not applicable", the other is "completely
+ungrounded". Averaging them together made every non-RAG feature look like a
+hallucination problem. *Fixed* by averaging only over calls that reported a score, and
+returning `None` when none did.
+
+**A test expectation was wrong rather than the code.** 50 errors in 550 calls is a
+genuine 9% breach, so the "aggregate hides it" scenario had to be resized to 2000
+healthy calls. Recorded because the distinction between a failing test and failing code
+is worth keeping straight.
