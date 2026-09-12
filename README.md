@@ -1,4 +1,4 @@
-# llm-observability-platform
+# llm-observability-platform (FastAPI, Pydantic)
 
 [![ci](https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.12-blue)
