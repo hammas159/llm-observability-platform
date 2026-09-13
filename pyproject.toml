@@ -6,10 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 # No numpy: PSI is a handful of logarithms, and pulling in a numerics stack for
 # that would be the tail wagging the dog.
-dependencies = [
-    "fastapi>=0.115", "uvicorn[standard]>=0.32",
-    "pydantic>=2.9", "rich>=13.9", "typer>=0.15",
-]
+dependencies = []
 
 [dependency-groups]
 dev = ["pytest>=8.3", "ruff>=0.8"]

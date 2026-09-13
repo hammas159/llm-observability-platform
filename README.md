@@ -1,4 +1,4 @@
-# llm-observability-platform (FastAPI, Pydantic)
+# llm-observability-platform (Python, zero core dependencies, optional Streamlit demo)
 
 [![ci](https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.12-blue)
@@ -124,7 +124,7 @@ separate demos.
 
 ## Tests
 
-**49 tests.** No numpy, no network, no model.
+**53 tests (49 core + 4 for the optional Streamlit demo).** No numpy, no network, no model.
 
 ```bash
 make test
@@ -163,7 +163,7 @@ git clone https://github.com/hammas159/llm-observability-platform
 cd llm-observability-platform
 
 uv sync --all-groups     # or: pip install -e ".[dev]"
-make test                # 49 tests, no numpy, no network, no model
+make test                # 53 tests, no numpy, no network, no model
 ```
 
 ```python
@@ -189,6 +189,20 @@ obs.check_alerts()       # global and per feature
 already emits and what [`rag-forge`](https://github.com/hammas159/rag-forge) already
 produces, so pointing one at the other needs no adapter.
 
+### The demo dashboard (`ui` dependency group)
+
+`pyproject.toml` has declared a `streamlit` + `pandas` `ui` group since the repo's
+first commit; this is the actual demo that group was for. Three tabs: cost and latency
+(cost per *success*, percentiles with cache hits excluded), a per-feature breakdown of
+what to switch off, and a PSI drift view with a sidebar toggle that injects a traffic
+change so you can watch it get caught. A synthetic but deterministic call stream is
+generated on load — no provider, no API key.
+
+```bash
+uv sync --group ui        # or: pip install streamlit pandas
+streamlit run ui/app.py
+```
+
 ## Problems hit while building this
 
 **The first alerting rule fired on a healthy service and missed a broken one.** A single
@@ -212,3 +226,25 @@ returning `None` when none did.
 genuine 9% breach, so the "aggregate hides it" scenario had to be resized to 2000
 healthy calls. Recorded because the distinction between a failing test and failing code
 is worth keeping straight.
+
+**The demo reported drift between two windows drawn from an identical distribution.**
+Built the dashboard above with 150 calls per window, ticked nothing, and PSI still
+called a *moderate shift* in latency. Nothing was wrong with the PSI implementation:
+the cause is that cache hits make LLM latency **bimodal** — ~2 ms on a hit, hundreds on
+a miss — and PSI bins a bimodal metric badly at small n, so a few calls landing either
+side of the cache flips the score:
+
+```
+n=150  latency psi=0.1405  -> "moderate shift"   (identical distributions)
+n=300  latency psi=0.0951  -> stable
+n=500  latency psi=0.0368  -> stable
+```
+
+*Fixed* in the demo by generating 500 calls per window, and the drift tab now states
+its sample size rather than presenting a PSI number as if n did not matter. Worth
+knowing before wiring a real alert to a PSI threshold on a low-traffic feature.
+
+**`fastapi`, `uvicorn`, `pydantic`, `rich` and `typer` were declared as core
+dependencies and imported nowhere**, alongside an empty `src/llmobs/api/` folder.
+Grepped `src/` and `tests/` for each before removing all five; the README title
+claimed that stack too, and now says what the code actually is.
