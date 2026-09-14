@@ -233,6 +233,11 @@ uv sync --group ui        # or: pip install streamlit pandas
 streamlit run ui/app.py
 ```
 
+![dashboard](docs/images/dashboard.png)
+
+*Cost per success and cache-excluded percentiles on a deterministic synthetic stream —
+the p95 of 612 ms is what a user on a cache miss actually waits.*
+
 ## Problems hit while building this
 
 **The first alerting rule fired on a healthy service and missed a broken one.** A single
