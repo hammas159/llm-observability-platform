@@ -1,20 +1,46 @@
-# llm-observability-platform (Python, zero core dependencies, optional Streamlit demo)
+<h1 align="center">llm-observability-platform</h1>
+<p align="center"><i>Monitoring built for LLM applications, not retrofitted from web monitoring</i></p>
 
-[![ci](https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml)
-![python](https://img.shields.io/badge/python-3.12-blue)
-![dependencies](https://img.shields.io/badge/core-no%20numpy-success)
-![license](https://img.shields.io/badge/license-MIT-green)
+<p align="center">
+  <a href="#four-ideas-the-rest-of-this-follows-from">Four ideas</a> &middot;
+  <a href="#usage">Usage</a> &middot;
+  <a href="#it-monitors-the-rest-of-the-portfolio">Monitoring the portfolio</a> &middot;
+  <a href="#limits">Limits</a> &middot;
+  <a href="#problems-hit-while-building-this">Problems hit</a>
+</p>
 
-**Monitoring built for LLM applications, not retrofitted from web monitoring.**
-
-Generic tracing tells you a request took 800ms. It does not tell you that the 800ms
-cost $0.04, was served by a fallback model, returned an ungrounded answer, and came
-from the one feature that is losing money. Those are the questions an LLM application
-actually raises — so here they are fields, not tags you remember to add.
+<p align="center">
+  <a href="https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml"><img src="https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
+  <img src="https://img.shields.io/badge/core%20deps-zero-success" alt="deps">
+  <img src="https://img.shields.io/badge/stack-Streamlit%20(optional%20demo)-orange" alt="stack">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
+</p>
 
 ---
 
 ## Four ideas the rest of this follows from
+
+```mermaid
+flowchart LR
+    R["LLM request"] --> T["trace"]
+    T --> F1["cost"]
+    T --> F2["model actually served"]
+    T --> F3["groundedness"]
+    T --> F4["feature / tenant"]
+    F1 --> D["drift + SLO checks"]
+    F2 --> D
+    F3 --> D
+    F4 --> D
+    D --> A["alert on what<br/>actually went wrong"]
+
+    style A fill:#2563eb,color:#fff
+```
+
+Generic tracing says a request took 800 ms. It does not say the 800 ms **cost $0.04, was
+served by a fallback model, returned an ungrounded answer, and came from the one feature
+losing money**. Those are fields here, not tags you have to remember to add.
+
 
 ### 1. Cost is attributed, never totalled
 
@@ -149,6 +175,10 @@ make test
   meaning look the same — deliberate, and the price of not storing prompts.
 - Grounding must be supplied by the caller. This platform measures it; it does not
   compute it.
+
+## Keywords
+
+LLM observability &middot; LLMOps &middot; tracing &middot; cost tracking &middot; token accounting &middot; drift detection &middot; PSI &middot; population stability index &middot; SLO &middot; groundedness &middot; monitoring &middot; alerting &middot; percentiles &middot; latency &middot; production LLM &middot; zero dependencies &middot; Streamlit
 
 ## License
 
