@@ -219,24 +219,20 @@ obs.check_alerts()       # global and per feature
 already emits and what [`rag-forge`](https://github.com/hammas159/rag-forge) already
 produces, so pointing one at the other needs no adapter.
 
-### The demo dashboard (`ui` dependency group)
+### Input / Output
 
-`pyproject.toml` has declared a `streamlit` + `pandas` `ui` group since the repo's
-first commit; this is the actual demo that group was for. Three tabs: cost and latency
-(cost per *success*, percentiles with cache hits excluded), a per-feature breakdown of
-what to switch off, and a PSI drift view with a sidebar toggle that injects a traffic
-change so you can watch it get caught. A synthetic but deterministic call stream is
-generated on load — no provider, no API key.
+![input](docs/images/input.png)
 
-```bash
-uv sync --group ui        # or: pip install streamlit pandas
-streamlit run ui/app.py
-```
+`python demo.py`
 
-![dashboard](docs/images/dashboard.png)
+![output](docs/images/output.png)
 
-*Cost per success and cache-excluded percentiles on a deterministic synthetic stream —
-the p95 of 612 ms is what a user on a cache miss actually waits.*
+Nothing drifted in any of those 1,200 trials. Both windows in every trial come from the
+same generator with no shift applied, so every alarm is false by construction.
+
+At n=150 the metric raises one **64% of the time**, and its worst draw reaches 0.3887 —
+past the *significant shift* threshold, not merely the moderate one. At n=500 it never
+fires. A PSI threshold on a low-traffic feature is a scheduled false alarm.
 
 ## Problems hit while building this
 
@@ -269,15 +265,18 @@ the cause is that cache hits make LLM latency **bimodal** — ~2 ms on a hit, hu
 a miss — and PSI bins a bimodal metric badly at small n, so a few calls landing either
 side of the cache flips the score:
 
+A single draw is not evidence of this, so `demo.py` now measures the false-alarm rate
+over 300 trials per sample size, on windows that are identical by construction:
+
 ```
-n=150  latency psi=0.1405  -> "moderate shift"   (identical distributions)
-n=300  latency psi=0.0951  -> stable
-n=500  latency psi=0.0368  -> stable
+n=150   median psi 0.1168   worst 0.3887   false alarms 192/300  (64.0%)
+n=300   median psi 0.0553   worst 0.1545   false alarms  24/300  ( 8.0%)
+n=500   median psi 0.0327   worst 0.0914   false alarms   0/300  ( 0.0%)
+n=2000  median psi 0.0085   worst 0.0257   false alarms   0/300  ( 0.0%)
 ```
 
-*Fixed* in the demo by generating 500 calls per window, and the drift tab now states
-its sample size rather than presenting a PSI number as if n did not matter. Worth
-knowing before wiring a real alert to a PSI threshold on a low-traffic feature.
+*Fixed* by generating 500 calls per window. Worth knowing before wiring a real alert to
+a PSI threshold on a low-traffic feature.
 
 **`fastapi`, `uvicorn`, `pydantic`, `rich` and `typer` were declared as core
 dependencies and imported nowhere**, alongside an empty `src/llmobs/api/` folder.
