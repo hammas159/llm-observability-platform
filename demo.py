@@ -9,6 +9,7 @@ This is the failure worth knowing before wiring an alert to a PSI threshold:
 LLM latency is bimodal because cache hits return in milliseconds and misses
 do not, and PSI bins a bimodal metric badly at small n.
 """
+
 import random
 import sys
 
@@ -33,7 +34,7 @@ def latencies(n: int, rng: random.Random) -> list[float]:
 
 
 print("INPUT")
-print(f"   two windows per row, both from the same generator")
+print("   two windows per row, both from the same generator")
 print(f"   cache hit rate     {CACHE_HIT_RATE:.0%}  ->  {HIT_MS[0]}-{HIT_MS[1]} ms")
 print(f"   cache miss         {1 - CACHE_HIT_RATE:.0%}  ->  {MISS_MS[0]}-{MISS_MS[1]} ms")
 print("   no shift is applied to either window at any sample size")
@@ -52,8 +53,10 @@ rng = random.Random(20260916)
 for n in (150, 300, 500, 2000):
     scores = sorted(psi_numeric(latencies(n, rng), latencies(n, rng)) for _ in range(TRIALS))
     alarms = sum(1 for s in scores if s >= 0.10)
-    print(f"   {n:>6}  {scores[len(scores) // 2]:>11.4f}  {scores[-1]:>10.4f}  "
-          f"{alarms:>6} / {TRIALS}  ({alarms / TRIALS:>5.1%})")
+    print(
+        f"   {n:>6}  {scores[len(scores) // 2]:>11.4f}  {scores[-1]:>10.4f}  "
+        f"{alarms:>6} / {TRIALS}  ({alarms / TRIALS:>5.1%})"
+    )
 
 print()
 print("   Nothing drifted in any of these trials. The alarms are the metric")
