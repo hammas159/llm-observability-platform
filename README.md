@@ -1,4 +1,4 @@
-<h1 align="center">llm-observability-platform</h1>
+<h1 align="center">llm-observability-platform (Python · PSI drift detection · cost telemetry)</h1>
 <p align="center"><i>Monitoring built for LLM applications, not retrofitted from web monitoring</i></p>
 
 <p align="center">
