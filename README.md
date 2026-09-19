@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml"><img src="https://github.com/hammas159/llm-observability-platform/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://github.com/hammasbuilds/llm-observability-platform/actions/workflows/ci.yml"><img src="https://github.com/hammasbuilds/llm-observability-platform/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
   <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   <img src="https://img.shields.io/badge/core%20deps-zero-success" alt="deps">
   <img src="https://img.shields.io/badge/stack-Streamlit%20(optional%20demo)-orange" alt="stack">
@@ -142,9 +142,9 @@ the current window and dilutes exactly the change being looked for.
 ## It monitors the rest of the portfolio
 
 `LLMCall` maps directly onto what
-[`llm-gateway`](https://github.com/hammas159/llm-gateway) already records
+[`llm-gateway`](https://github.com/hammasbuilds/llm-gateway) already records
 (model, provider, cost, fallback) and what
-[`rag-forge`](https://github.com/hammas159/rag-forge) already produces
+[`rag-forge`](https://github.com/hammasbuilds/rag-forge) already produces
 (grounding score, refusal). Point one at the other and the projects stop being
 separate demos.
 
@@ -189,7 +189,7 @@ MIT
 ## Run it yourself
 
 ```bash
-git clone https://github.com/hammas159/llm-observability-platform
+git clone https://github.com/hammasbuilds/llm-observability-platform
 cd llm-observability-platform
 
 uv sync --all-groups     # or: pip install -e ".[dev]"
@@ -215,8 +215,8 @@ obs.drift()              # PSI across prompt shape, model mix, latency, cost
 obs.check_alerts()       # global and per feature
 ```
 
-`LLMCall` maps onto what [`llm-gateway`](https://github.com/hammas159/llm-gateway)
-already emits and what [`rag-forge`](https://github.com/hammas159/rag-forge) already
+`LLMCall` maps onto what [`llm-gateway`](https://github.com/hammasbuilds/llm-gateway)
+already emits and what [`rag-forge`](https://github.com/hammasbuilds/rag-forge) already
 produces, so pointing one at the other needs no adapter.
 
 ### Input / Output
